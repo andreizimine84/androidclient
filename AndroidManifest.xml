@@ -58,17 +58,21 @@
         		
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-					<category android:name="android.intent.category.LAUNCHER" />
-					 
+					<category android:name="android.intent.category.LAUNCHER" /> 
             </intent-filter>
             
         </activity>
-        <receiver android:name="com.helloworld.MyStartReceiver">
+        <receiver android:name="com.helloworld.testjni2.MyStartReceiver">
     	    <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-                <receiver android:name="com.helloworld.MyBreakReceiver">
+                <receiver android:name="com.helloworld.testjni2.MyBreakReceiver">
+    		<intent-filter>
+            	<action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.helloworld.testjni2.MyInfoStartReceiver">
     		<intent-filter>
             	<action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
@@ -77,8 +81,10 @@
   			android:name=".FileService">
 		</service> 
 		<service
-			android:name="SelectAndShareService">
+			android:name=".SelectAndShareService">
+		</service>
+		<service
+			android:name=".InfoService">
 		</service>
     </application>
-    
 </manifest>

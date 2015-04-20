@@ -31,9 +31,9 @@ public class FileService extends IntentService {
 	public FileService(){
 		super("FileService");
 	}
-
+	
 	protected void onHandleIntent(Intent intent) throws NullPointerException{
-		FileSender.main(intent, this.getApplicationContext());
+		//FileSender.main(intent, this.getApplicationContext());
 		scheduleNextUpdate();
 	}
 

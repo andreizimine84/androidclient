@@ -7,5 +7,6 @@ LOCAL_MODULE    := TestJNI2
 LOCAL_SRC_FILES := TestJNI2.cpp 
 APP_OPTIM := debug
 LOCAL_LDLIBS := -llog
-APP_ABI := all
+APP_ABI := armeabi
+APP_PLATFORM := android-19
 include $(BUILD_SHARED_LIBRARY)

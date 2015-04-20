@@ -92,7 +92,6 @@ public class FileSender {
 		String inputString;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
     	BufferedReader inputReader = null;
-    	System.out.println("numberFile" + inputFile);
     	inputReader = new BufferedReader(new InputStreamReader(globalContext.openFileInput(inputFile)));
     	try{
 	    	StringBuffer stringBuffer = new StringBuffer(); 

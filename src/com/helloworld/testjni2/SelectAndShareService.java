@@ -37,7 +37,7 @@ public class SelectAndShareService extends IntentService{
 	
 	protected void onHandleIntent(Intent intent)
 	{
-		try {
+		/*try {
 			SelectAndShare.main(intent, this.getApplicationContext());
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
@@ -53,7 +53,7 @@ public class SelectAndShareService extends IntentService{
 		catch (NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
 		scheduleNextUpdate();
 	}
 
