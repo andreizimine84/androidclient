@@ -21,10 +21,10 @@ int dataLengthRest = 0;
 int count = 0;
 
  extern "C" {
-     JNIEXPORT void JNICALL Java_com_helloworld_testjni2_InfoService_connectToHostJNICPP(JNIEnv * env, jobject obj, jstring port, jstring addr, jstring data);
+     JNIEXPORT void JNICALL Java_com_helloworld_testjni2_InfoSender_connectToHostJNICPP(JNIEnv * env, jobject obj, jstring port, jstring addr, jstring data);
  };
 
- JNIEXPORT void JNICALL Java_com_helloworld_testjni2_InfoService_connectToHostJNICPP(
+ JNIEXPORT void JNICALL Java_com_helloworld_testjni2_InfoSender_connectToHostJNICPP(
  	JNIEnv *env, jobject obj, jstring port, jstring addr, jstring data) {
 
 	int sockfd;

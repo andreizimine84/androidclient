@@ -19,10 +19,10 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 		    
 	private BroadcastReceiver mStartReceiver;
 	private BroadcastReceiver mBreakReceiver;
-	//private BroadcastReceiver mInfoStartReceiver;
+	private BroadcastReceiver mInfoStartReceiver;
 	private IntentFilter mStartFilter;
 	private IntentFilter mBreakFilter;
-	//private IntentFilter mInfoStartFilter;
+	private IntentFilter mInfoStartFilter;
 	int maxDataLength = 300;
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -31,12 +31,14 @@ public class TestJNIActivity extends Activity implements OnClickListener {
     	setContentView(R.layout.activity_main);
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-		mStartFilter = new IntentFilter();
+		/*mStartFilter = new IntentFilter();
 		mStartFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 		mBreakFilter = new IntentFilter();
-		mBreakFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+		mBreakFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);*/
+		//mInfoStartFilter = new IntentFilter();
+		//mInfoStartFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
 		
-		mStartReceiver = new BroadcastReceiver() {
+		/*mStartReceiver = new BroadcastReceiver() {
 			  public void onReceive(Context context, Intent intent) {
 					  Intent intent1 = new Intent(context, SelectAndShareService.class);
 					  context.startService(intent1); 
@@ -51,12 +53,12 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 					  context.startService(intent1);
 			  } 
 		};	
-
+*/
     	button1 = (Button) findViewById(R.id.button1);
     	button1.setOnClickListener(this);
     }
     
-	public BroadcastReceiver mBreakReceiver2 = new BroadcastReceiver() {
+	/*public BroadcastReceiver mBreakReceiver2 = new BroadcastReceiver() {
 		@Override
 	    public void onReceive(Context context, Intent intent) {
 			TempFolder.mAddBackNumber = TempFolder.mAddNumber;				
@@ -66,15 +68,13 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 			TempFolder.connectRWException = true;
 			context.startService(intent2);
 	    }
-	};
+	};*/
 	
-    public static native void connectToHostJNICPP(String port, String addr, String data);
-
     public void onClick(View v){
     	Log.d("VIVZ", "Knappen fungerar");
-		Context context = this.getApplicationContext();
-		Intent intent3 = new Intent(context, InfoService.class);
-		context.startService(intent3);
+    	Context context = this.getApplicationContext();
+    	Intent intent3 = new Intent(context, InfoService.class);
+    	context.startService(intent3);
     	Log.d("VIVZ", "Knappen fungerar 2");
     }
         
@@ -85,15 +85,17 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 	 @Override
 	 public void onResume() {
 	   super.onResume();
-	   registerReceiver(mStartReceiver, mStartFilter);
-	   registerReceiver(mBreakReceiver, mBreakFilter);
+	   //registerReceiver(mStartReceiver, mStartFilter);
+	   //registerReceiver(mBreakReceiver, mBreakFilter);
+	   //registerReceiver(mInfoStartReceiver, mInfoStartFilter);
 	 }
 
 	 @Override
 	 protected void onPause() {
 	   super.onPause();
-	   unregisterReceiver(mStartReceiver);
-	   unregisterReceiver(mBreakReceiver);
+	   //unregisterReceiver(mStartReceiver);
+	   //unregisterReceiver(mBreakReceiver);
+	   //unregisterReceiver(mInfoStartReceiver);
 	 } 
 	 
     @Override

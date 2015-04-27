@@ -54,7 +54,7 @@ public class SelectAndShareService extends IntentService{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}*/
-		scheduleNextUpdate();
+		//scheduleNextUpdate();
 	}
 
 	public void scheduleNextUpdate()
