@@ -21,10 +21,10 @@ int dataLengthRest = 0;
 int count = 0;
 
  extern "C" {
-     JNIEXPORT void JNICALL Java_com_helloworld_testjni2_InfoSender_connectToHostJNICPP(JNIEnv * env, jobject obj, jstring port, jstring addr, jstring data);
+     JNIEXPORT bool JNICALL Java_com_helloworld_testjni2_FileSender_connectToHostJNICPP(JNIEnv * env, jobject obj, jstring port, jstring addr, jstring data);
  };
 
- JNIEXPORT void JNICALL Java_com_helloworld_testjni2_InfoSender_connectToHostJNICPP(
+ JNIEXPORT bool JNICALL Java_com_helloworld_testjni2_FileSender_connectToHostJNICPP(
  	JNIEnv *env, jobject obj, jstring port, jstring addr, jstring data) {
 
 	int sockfd;
@@ -32,10 +32,11 @@ int count = 0;
 	const char *cPort = (*env).GetStringUTFChars(port, NULL);
 	const char *cAddr = (*env).GetStringUTFChars(addr, NULL);
 	const char *cData = (*env).GetStringUTFChars(data, NULL);
-
+		env->MonitorEnter(obj);
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	    if(sockfd<0){
 	    	__android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "Log catch %s", strerror(errno));
+	    	return true;
 	    }
 	    	bzero(&serv_addr,sizeof(serv_addr));
 	    	serv_addr.sin_family = AF_INET;
@@ -47,8 +48,11 @@ int count = 0;
 	    	__android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "Data: %s", cData);
 	    	__android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "Count: %d", count++);
 
-	    	if(connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
+	    	if(connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){
 	    		__android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "Log catch %s", strerror(errno));
+	    		env->MonitorExit(obj);
+	    		return false;
+	    	}
 
 	    	char buf[65534] = { 0 };
 	    	snprintf(buf, 65534, "POST /path/script.cgi HTTP/1.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n%s", strlen(cData), cData);
@@ -56,4 +60,6 @@ int count = 0;
 
 	    	write(sockfd, buf, strlen (buf) + 1);
 	    	close(sockfd);
+	    	env->MonitorExit(obj);
+	    	return true;
 	}
