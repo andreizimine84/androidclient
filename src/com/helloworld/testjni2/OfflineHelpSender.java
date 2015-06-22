@@ -15,16 +15,28 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-public class OfflineHelpSender {
+public class OfflineHelpSender{
 	static Context globalContext;
+	private ByteArrayOutputStream baos = null;
+	static int maxDataLength = 3000;
+	private static boolean JNI = true;
 	
-	public static void main(Intent intent, Context context)
+	static {
+    	System.loadLibrary("TestJNI2");
+    }
+	
+	public static void main(Context context) throws IOException
 	{
 		globalContext = context;
-		loadFile(globalContext.getFilesDir());
-		deleteRecursive(globalContext.getFilesDir());
+		if(!JNI){
+			loadFile(globalContext.getFilesDir());
+			deleteRecursive(globalContext.getFilesDir());
+		}
+		else if(JNI){
+			OfflineCppHelpSender.main(globalContext);
+		}
 	}
-	
+
 	public static void deleteRecursive(File fileOrDirectory) {
 	    if (fileOrDirectory.isDirectory())
 	        for (File child : fileOrDirectory.listFiles())
@@ -33,41 +45,53 @@ public class OfflineHelpSender {
 	    fileOrDirectory.delete();
 	}
 
-	public static ByteArrayOutputStream loadFile(File root){
-		String inputString;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	public static void loadFile(File root) throws IOException{
 		try {
 			for (File child : root.listFiles()){
+				FileInputStream fis = null;
+				String inputString;
+				final ByteArrayOutputStream baos = new ByteArrayOutputStream(maxDataLength);
 				if(root.isDirectory()){
 					if(child.exists()){
-						FileInputStream fis;
 						fis = globalContext.openFileInput(child.getName().toString());
 						BufferedReader inputReader = new BufferedReader(new InputStreamReader(fis));
 						try{
-							StringBuffer stringBuffer = new StringBuffer(); 		
+							StringBuffer stringBuffer = new StringBuffer(maxDataLength); 		
 							while ((inputString = inputReader.readLine()) != null) {
 								stringBuffer.append(inputString);
 								baos.write(inputString.getBytes()); 
-							}
-							baos.flush();
-
+								inputString = null;
+							}							
 							connectAndSendHttp(baos);
 						}
 					    catch (IOException e) {
 					    	Log.e("tag", e.getMessage());
-					    }
+					    } 
+						finally{
+					         if(baos!=null){
+					        	 baos.flush();
+					        	 baos.close();
+					         } 
+					         if(fis!=null){
+					        	 //fis.reset();
+					        	 fis.close();
+					        	 fis = null;
+					         }     	 
+					    }	
+						/*catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}*/
 					}
 				}
 			}
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
-		return baos;
 	}
-	
+
 	public static void connectAndSendHttp(ByteArrayOutputStream baos){
 		try {
-	
 	        URL url;
 	    	url = new URL("http://10.0.2.2:8080");
 			
