@@ -19,10 +19,13 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 		    
 	private BroadcastReceiver mStartReceiver;
 	private BroadcastReceiver mBreakReceiver;
-	private BroadcastReceiver mInfoStartReceiver;
+	private BroadcastReceiver mJNIClientReceiver;
+	
 	private IntentFilter mStartFilter;
 	private IntentFilter mBreakFilter;
-	private IntentFilter mInfoStartFilter;
+	private IntentFilter mJNIClientFilter;
+	private static boolean JNI = true;
+	
 	int maxDataLength = 300;
     @Override
     public void onCreate(Bundle savedInstanceState)
@@ -31,34 +34,52 @@ public class TestJNIActivity extends Activity implements OnClickListener {
     	setContentView(R.layout.activity_main);
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-		/*mStartFilter = new IntentFilter();
-		mStartFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+		mStartFilter = new IntentFilter();
 		mBreakFilter = new IntentFilter();
-		mBreakFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);*/
-		//mInfoStartFilter = new IntentFilter();
-		//mInfoStartFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-		
-		/*mStartReceiver = new BroadcastReceiver() {
-			  public void onReceive(Context context, Intent intent) {
-					  Intent intent1 = new Intent(context, SelectAndShareService.class);
-					  context.startService(intent1); 
-			  } 
-		};
-
-		LocalBroadcastManager.getInstance(this).registerReceiver(mBreakReceiver2, new IntentFilter("byteArray"));
-
-		mBreakReceiver = new BroadcastReceiver() {
-			  public void onReceive(Context context, Intent intent) {
+		mJNIClientFilter = new IntentFilter();
+		if(!JNI){
+			mStartFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+			mBreakFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+			mStartReceiver = new BroadcastReceiver() {
+				  public void onReceive(Context context, Intent intent) {
+						  Intent intent1 = new Intent(context, SelectAndShareService.class);
+						  context.startService(intent1); 
+				  } 
+			};
+	
+			LocalBroadcastManager.getInstance(this).registerReceiver(mBreakReceiver2, new IntentFilter("byteArray"));
+	
+			mBreakReceiver = new BroadcastReceiver() {
+				  public void onReceive(Context context, Intent intent) {  
 					  Intent intent1 = new Intent(context, FileService.class);
 					  context.startService(intent1);
-			  } 
-		};	
-*/
+				  } 
+			};	
+		}
+		else if(JNI){	
+			mStartFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+			mJNIClientFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+			mStartReceiver = new BroadcastReceiver() {
+				  public void onReceive(Context context, Intent intent) {
+						  Intent intent1 = new Intent(context, SelectAndShareService.class);
+						  context.startService(intent1); 
+				  } 
+			};
+			
+			LocalBroadcastManager.getInstance(this).registerReceiver(mBreakReceiver3, new IntentFilter("byteArray2"));
+			
+			mJNIClientReceiver = new BroadcastReceiver() {
+				  public void onReceive(Context context, Intent intent) {
+						  Intent intent1 = new Intent(context, JNIClient.class);
+						  context.startService(intent1); 
+				  } 
+			};
+		}
     	button1 = (Button) findViewById(R.id.button1);
     	button1.setOnClickListener(this);
     }
     
-	/*public BroadcastReceiver mBreakReceiver2 = new BroadcastReceiver() {
+	public BroadcastReceiver mBreakReceiver2 = new BroadcastReceiver() {
 		@Override
 	    public void onReceive(Context context, Intent intent) {
 			TempFolder.mAddBackNumber = TempFolder.mAddNumber;				
@@ -68,14 +89,20 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 			TempFolder.connectRWException = true;
 			context.startService(intent2);
 	    }
-	};*/
+	};
+	
+	public BroadcastReceiver mBreakReceiver3 = new BroadcastReceiver() {
+		@Override
+	    public void onReceive(Context context, Intent intent) {
+			TempFolder.mAddBackNumber = TempFolder.mAddNumber;				
+			Intent intent2 = new Intent(context, JNIClient.class);
+			intent2.putExtra("image", intent.getStringExtra("folder"));
+			intent2.putExtra("image", intent.getStringExtra("numberFile"));
+			context.startService(intent2);
+	    }
+	};
 	
     public void onClick(View v){
-    	Log.d("VIVZ", "Knappen fungerar");
-    	Context context = this.getApplicationContext();
-    	Intent intent3 = new Intent(context, InfoService.class);
-    	context.startService(intent3);
-    	Log.d("VIVZ", "Knappen fungerar 2");
     }
         
 	 protected void onStart() {
@@ -85,17 +112,17 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 	 @Override
 	 public void onResume() {
 	   super.onResume();
-	   //registerReceiver(mStartReceiver, mStartFilter);
-	   //registerReceiver(mBreakReceiver, mBreakFilter);
-	   //registerReceiver(mInfoStartReceiver, mInfoStartFilter);
+	   registerReceiver(mStartReceiver, mStartFilter);
+	   registerReceiver(mBreakReceiver, mBreakFilter);
+	   registerReceiver(mJNIClientReceiver, mJNIClientFilter);
 	 }
 
 	 @Override
 	 protected void onPause() {
 	   super.onPause();
-	   //unregisterReceiver(mStartReceiver);
-	   //unregisterReceiver(mBreakReceiver);
-	   //unregisterReceiver(mInfoStartReceiver);
+	   unregisterReceiver(mStartReceiver);
+	   unregisterReceiver(mBreakReceiver);
+	   unregisterReceiver(mJNIClientReceiver);
 	 } 
 	 
     @Override
