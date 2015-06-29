@@ -49,42 +49,39 @@
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
-        </provider>
-        
+        </provider>      
         <activity
             android:name=".TestJNIActivity"
             android:label="@string/app_name"
             android:launchMode ="singleTop" >
-        		
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-					<category android:name="android.intent.category.LAUNCHER" /> 
-            </intent-filter>
-            
+					<category android:name="android.intent.category.LAUNCHER" />             
+			</intent-filter> 
         </activity>
+        <receiver android:name="com.helloworld.testjni2.MyJNIClientReceiver">
+    		<intent-filter>
+            	<action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>   
         <receiver android:name="com.helloworld.testjni2.MyStartReceiver">
-    	    <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-                <receiver android:name="com.helloworld.testjni2.MyBreakReceiver">
-    		<intent-filter>
+            <intent-filter>
             	<action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.helloworld.testjni2.MyInfoStartReceiver">
-    		<intent-filter>
+        <receiver android:name="com.helloworld.testjni2.MyBreakReceiver">
+            <intent-filter>
             	<action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-    	<service
+        <service
+  			android:name=".JNIClient">
+			</service> 
+		 	<service
   			android:name=".FileService">
 		</service> 
 		<service
 			android:name=".SelectAndShareService">
-		</service>
-		<service
-			android:name=".InfoService">
 		</service>
     </application>
 </manifest>

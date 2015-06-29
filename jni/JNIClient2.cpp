@@ -1,3 +1,9 @@
+/*
+ * JNIClient2.cpp
+ *
+ *  Created on: May 4, 2015
+ *      Author: andreizimine
+ */
 #include <jni.h>
 #include <string.h>
 #include <stdio.h>
@@ -21,13 +27,13 @@ int dataLengthRest = 0;
 int count = 0;
 
  extern "C" {
-     JNIEXPORT bool JNICALL Java_com_helloworld_testjni2_JNISender_connectToHostJNICPP(JNIEnv * env, jobject obj, jstring port, jstring addr, jstring data, int maxDataLength);
+     JNIEXPORT void JNICALL Java_com_helloworld_testjni2_OfflineCppHelpSender_connectToHostJNICPP(JNIEnv * env, jobject obj, jstring port, jstring addr, jstring data, int maxDataLength);
  };
 
- JNIEXPORT bool JNICALL Java_com_helloworld_testjni2_JNISender_connectToHostJNICPP(
+ JNIEXPORT void JNICALL Java_com_helloworld_testjni2_OfflineCppHelpSender_connectToHostJNICPP(
  	JNIEnv *env, jobject obj, jstring port, jstring addr, jstring data, int maxDataLength) {
+
 	int sockfd;
-	bool offlineJNI;
 	struct sockaddr_in serv_addr;
 	const char *cPort = (*env).GetStringUTFChars(port, NULL);
 	const char *cAddr = (*env).GetStringUTFChars(addr, NULL);
@@ -35,16 +41,6 @@ int count = 0;
 		sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	    if(sockfd<0){
 	    	__android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "Log catch %s", strerror(errno));
-	    	jclass cls = env->GetObjectClass(obj);
-	    	jfieldID fid;
-	    	jstring jstr;
-	    	const char *str;
-	    	jboolean connectCppException;
-
-		  	fid = env->GetStaticFieldID(cls, "connectCppException", "Z");
-		  	connectCppException = env->GetStaticBooleanField(cls, fid);
-	    	env->SetStaticBooleanField(cls, fid, true);
-	    	return false;
 	    }
 	    	bzero(&serv_addr,sizeof(serv_addr));
 	    	serv_addr.sin_family = AF_INET;
@@ -53,21 +49,10 @@ int count = 0;
 
 	    	if(connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){
 	    		__android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "Log catch %s", strerror(errno));
-		    	jclass cls = env->GetObjectClass(obj);
-		    	jfieldID fid;
-		    	jstring jstr;
-		    	const char *str;
-		    	jboolean connectCppException;
-
-			  	fid = env->GetStaticFieldID(cls, "connectCppException", "Z");
-			  	connectCppException = env->GetStaticBooleanField(cls, fid);
-		    	env->SetStaticBooleanField(cls, fid, true);
-		    	return false;
 	    	}
 
 	    	char buf[maxDataLength] = { 0 };
 	    	snprintf(buf, maxDataLength, "POST /path/script.cgi HTTP/1.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n%s", strlen(cData), cData);
 	    	write(sockfd, buf, strlen (buf) + 1);
 	    	close(sockfd);
-	    	return true;
- 	 }
+	}

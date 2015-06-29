@@ -2,6 +2,7 @@ package com.helloworld.testjni2;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 
 import android.app.AlarmManager;
@@ -37,7 +38,7 @@ public class SelectAndShareService extends IntentService{
 	
 	protected void onHandleIntent(Intent intent)
 	{
-		/*try {
+		try {
 			SelectAndShare.main(intent, this.getApplicationContext());
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
@@ -45,16 +46,17 @@ public class SelectAndShareService extends IntentService{
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		catch (ClassCastException e) {
+		} catch (ClassCastException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		catch (NullPointerException e) {
+		} catch (NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}*/
-		//scheduleNextUpdate();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+		scheduleNextUpdate();
 	}
 
 	public void scheduleNextUpdate()

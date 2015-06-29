@@ -2,6 +2,7 @@ package com.helloworld.testjni2;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,6 +10,7 @@ import java.io.InputStreamReader;
 import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EmptyStackException;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +35,7 @@ import android.os.Build;
 import android.os.Debug;
 import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 public class SelectAndShare extends Application{
 	FileOutputStream fos = null;
@@ -42,15 +45,58 @@ public class SelectAndShare extends Application{
 	byte[] buffer = null;
 	static Context globalContext;
 	private static SharedPreferences settings;
+	static int maxDataLength = 2000;
+	static StringBuilder data = new StringBuilder(maxDataLength);
+	//static FileOutputStream outputStream = null;
 	
-	public static void main(Intent intent, Context context) throws SecurityException, RemoteException, ClassCastException, NullPointerException
+	
+	public static void main(Intent intent, Context context) throws SecurityException, RemoteException, ClassCastException, NullPointerException, IOException
 	{
 		globalContext = context;
 		TempFolder.setFolder(globalContext.getFilesDir().getPath());
-		TempFolder.setFile(completeWriteTempFile(getInfoStream()));
+		TempFolder.setFile(completeWriteTempFile(returnAllElements()));
 		processCheck();
 		Intent in1 = new Intent("byteArray");
 		sendLocationBroadcast(in1);
+		//data.delete(0, data.length());
+		//data.setLength(0);
+	}
+	
+	public static ByteArrayOutputStream returnAllElements()throws SecurityException, RemoteException, ClassCastException, NullPointerException, IOException{	
+		ByteArrayOutputStream baosR = new ByteArrayOutputStream(maxDataLength);	
+		baosR.write(getInfoStream().toString().getBytes());
+		baosR.write(getNetworkInfoStream().toString().getBytes());
+		baosR.write(getRunningTaksInfoStream().toString().getBytes());
+		baosR.write(getSensorInfoStream().toString().getBytes());
+		baosR.write(getTimeInfoStream().toString().getBytes());
+		if(baosR.size() <= maxDataLength)
+			return baosR;
+		else if(baosR.size() > maxDataLength){
+			baosR.flush();
+			baosR.reset();
+			baosR.close();
+		}
+		baosR.flush();
+		baosR.reset();
+		baosR.close();
+		return null;
+	}
+	
+	public StringBuilder returnAll() throws RemoteException{
+		data.append('\002');
+		data.append("infostream");
+		data.append('\003');
+		data.append(getInfoStream().toString());
+		data.append('\003');
+		data.append('\002');
+		data.append("networkinfostream");
+		data.append('\003');
+		data.append(getNetworkInfoStream().toString());
+		data.append('\002');
+		data.append(getRunningTaksInfoStream().toString());
+		data.append(getSensorInfoStream().toString());
+		data.append(getTimeInfoStream().toString());
+		return data;
 	}
 	
 	public static String completeWriteTempFile(ByteArrayOutputStream baos) 
@@ -63,20 +109,21 @@ public class SelectAndShare extends Application{
     			outputStream = globalContext.openFileOutput("output_temp" + TempFolder.mAddNumber + ".txt", Context.MODE_PRIVATE);
     		else
     			throw new EmptyStackException();
-    	
 	    	baos.writeTo(outputStream);
-	    	
+	    	baos.flush();
+	    	baos.reset();
+	    	baos.close();
+	    	outputStream.flush();
+	    	outputStream.close();
 	    	return "output_temp" + TempFolder.mAddNumber + ".txt";
 	    }
-    
 		catch(IOException e)
 		{
 			System.err.println("Caught IOException: " + e.getMessage());
-		}
-	    
+		}   
 	    return null;
 	}
-	
+
 	private static void sendLocationBroadcast(Intent intent)
 	{
 		intent.putExtra("numberFile", TempFolder.getFile());
@@ -333,5 +380,4 @@ public class SelectAndShare extends Application{
 		
 		return baos;
 	}
-
 }

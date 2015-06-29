@@ -1,5 +1,6 @@
 package com.helloworld.testjni2;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import android.app.AlarmManager;
@@ -7,6 +8,7 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.RemoteException;
 import android.text.format.DateUtils;
 import android.text.format.Time;
 
@@ -33,8 +35,25 @@ public class FileService extends IntentService {
 	}
 	
 	protected void onHandleIntent(Intent intent) throws NullPointerException{
-		//FileSender.main(intent, this.getApplicationContext());
-		//scheduleNextUpdate();
+		try {
+			FileSender.main(intent, this.getApplicationContext());
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassCastException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		scheduleNextUpdate();
 	}
 
 	public void scheduleNextUpdate()

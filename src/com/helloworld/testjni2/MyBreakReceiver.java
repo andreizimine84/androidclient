@@ -8,9 +8,12 @@ public class MyBreakReceiver extends BroadcastReceiver {
 
 @Override
   public void onReceive(Context context, Intent intent) {
-
-		  Intent intent1 = new Intent(context, FileService.class);
-		  context.startService(intent1);
-
+	if(isOrderedBroadcast()){
+		return;
+	}
+	else{
+	  Intent intent1 = new Intent(context, FileService.class);
+	  context.startService(intent1);
+	}
   } 
 } 

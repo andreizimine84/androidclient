@@ -19,22 +19,29 @@ import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Debug;
+import android.os.RemoteException;
 import android.util.Log;
 
-public class FileSender {
+public class FileSender{
 
 	String dirName = "tempDirectory";
 	byte[] buffer = null;
 	InputStream is = null;
 	static Context globalContext;
+	private static boolean JNI = false;
+	final String addr = "10.0.2.2";
+	final String port = "8080";
+	static int maxDataLength = 3000;
 	
-	public static void main(Intent intent, Context context)
+	// göra beskrivning
+	@SuppressWarnings("static-access")
+	public static void main(Intent intent, Context context) throws SecurityException, RemoteException, ClassCastException, NullPointerException, IOException, InterruptedException
 	{
 		globalContext = context;
-		connectAndSendHttp(intent);
+		connectAndSendHttp();
 	}
 	
-	public static void connectAndSendHttp(Intent intent){
+	public static void connectAndSendHttp(){
 		try {
 			if(TempFolder.connectRWException == true){
 				URL url;
@@ -53,13 +60,12 @@ public class FileSender {
 				OutputStream output = conn.getOutputStream();
 
 				output = completeLoadFile(output);
-				System.out.println("logcat" + output.toString());
 				output.close();
 				conn.getInputStream();
 				
 				if(TempFolder.connectException == true)
 				{
-					OfflineHelpSender.main(intent, globalContext.getApplicationContext());
+					OfflineHelpSender.main(globalContext.getApplicationContext());
 					TempFolder.connectException = false;
 				}
 				
@@ -74,32 +80,31 @@ public class FileSender {
 		}
 	}
 
-	public static OutputStream completeLoadFile(OutputStream output) throws FileNotFoundException, IOException{
-    	
+	public static OutputStream completeLoadFile(OutputStream output) throws FileNotFoundException, IOException{   	
     	if(TempFolder.mAddBackNumber == 1){
     		output.write(loadFile("output_temp" + TempFolder.mAddBackNumber + ".txt").toByteArray());
-    		new File(globalContext.getFilesDir(),"output_temp" + TempFolder.mAddBackNumber+ ".txt").delete();
+    		new File(globalContext.getFilesDir(),"output_temp" + TempFolder.mAddBackNumber + ".txt").delete();
     	}
     	else{
     		TempFolder.mAddBackNumber--;
     		output.write(loadFile("output_temp" + TempFolder.mAddBackNumber + ".txt").toByteArray());
-    		new File(globalContext.getFilesDir(),"output_temp" + TempFolder.mAddBackNumber+ ".txt").delete();
+    		new File(globalContext.getFilesDir(),"output_temp" + TempFolder.mAddBackNumber + ".txt").delete();
     	}
     	return output;
 	}
 
 	public static ByteArrayOutputStream loadFile(String inputFile) throws FileNotFoundException {
 		String inputString;
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream(maxDataLength);
     	BufferedReader inputReader = null;
     	inputReader = new BufferedReader(new InputStreamReader(globalContext.openFileInput(inputFile)));
     	try{
-	    	StringBuffer stringBuffer = new StringBuffer(); 
-		    
+	    	StringBuffer stringBuffer = new StringBuffer();		    
 		    while ((inputString = inputReader.readLine()) != null) {
 		        stringBuffer.append(inputString);
-		        baos.write(inputString.getBytes()); 
+		        baos.write(inputString.getBytes(), 0, inputString.length()); 
 		    }
+
 		    baos.flush(); 
 	    }
         catch (IOException e) {
@@ -108,9 +113,8 @@ public class FileSender {
 	    return baos;
 	}
 
-	public ByteArrayOutputStream getStream (InputStream is) throws IOException
+	/*public ByteArrayOutputStream getStream (InputStream is) throws IOException
 	{
-		
 		int size = is.available();
 		byte[] query = new byte[size];
 		
@@ -175,4 +179,8 @@ public class FileSender {
 		
 		return baos;
 	}
+
+	public void run() {
+
+	}*/
 }

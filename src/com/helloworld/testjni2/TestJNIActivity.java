@@ -24,7 +24,7 @@ public class TestJNIActivity extends Activity implements OnClickListener {
 	private IntentFilter mStartFilter;
 	private IntentFilter mBreakFilter;
 	private IntentFilter mJNIClientFilter;
-	private static boolean JNI = true;
+	private static boolean JNI = false;
 	
 	int maxDataLength = 300;
     @Override
