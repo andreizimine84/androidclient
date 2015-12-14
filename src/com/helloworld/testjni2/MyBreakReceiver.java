@@ -6,14 +6,13 @@ import android.content.Intent;
 
 public class MyBreakReceiver extends BroadcastReceiver {
 
-@Override
-  public void onReceive(Context context, Intent intent) {
-	if(isOrderedBroadcast()){
-		return;
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		if (isOrderedBroadcast()) {
+			return;
+		} else {
+			Intent intent1 = new Intent(context, FileService.class);
+			context.startService(intent1);
+		}
 	}
-	else{
-	  Intent intent1 = new Intent(context, FileService.class);
-	  context.startService(intent1);
-	}
-  } 
-} 
+}

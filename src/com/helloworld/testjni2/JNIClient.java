@@ -10,21 +10,21 @@ import android.text.format.Time;
 
 public class JNIClient extends IntentService {
 
+	private final JNISender mJNISender = new JNISender();
+
 	public JNIClient() {
 		super("JNIClient");
 	}
 
 	@Override
 	protected void onHandleIntent(Intent intent) {
-		JNISender.main(intent, this.getApplicationContext());
+		mJNISender.main(intent, this.getApplicationContext());
 		scheduleNextUpdate();
 	}
-	
-	public void scheduleNextUpdate()
-	{
+
+	public void scheduleNextUpdate() {
 		Intent intent = new Intent(this, this.getClass());
-		PendingIntent pendingIntent =
-				PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		long currentTimeMillis = System.currentTimeMillis();
 		long nextUpdateTimeMillis = currentTimeMillis + 1 * DateUtils.MINUTE_IN_MILLIS;

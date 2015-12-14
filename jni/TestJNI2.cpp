@@ -65,7 +65,7 @@ int count = 0;
 		    	return false;
 	    	}
 
-	    	char buf[maxDataLength] = { 0 };
+	    	char buf[maxDataLength];
 	    	snprintf(buf, maxDataLength, "POST /path/script.cgi HTTP/1.0\r\nContent-Type: application/x-www-form-urlencoded\r\nContent-Length: %d\r\n\r\n%s", strlen(cData), cData);
 	    	write(sockfd, buf, strlen (buf) + 1);
 	    	close(sockfd);

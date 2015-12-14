@@ -40,7 +40,7 @@
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
-        android:label="@string/app_name">
+        android:label="@string/app_name" android:debuggable="true">
 		<provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="com.helloworld.testjni2"
@@ -59,11 +59,6 @@
 					<category android:name="android.intent.category.LAUNCHER" />             
 			</intent-filter> 
         </activity>
-        <receiver android:name="com.helloworld.testjni2.MyJNIClientReceiver">
-    		<intent-filter>
-            	<action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>   
         <receiver android:name="com.helloworld.testjni2.MyStartReceiver">
             <intent-filter>
             	<action android:name="android.intent.action.BOOT_COMPLETED" />
