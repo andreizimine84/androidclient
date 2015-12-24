@@ -43,7 +43,6 @@ public class SelectAndShare extends Application {
 	FileOutputStream fos = null;
 	ByteArrayOutputStream baos = null;
 	InputStream is = null;
-	int bytesAvailable = 0;
 	byte[] buffer = null;
 	Context globalContext;
 	DataParser dp = new DataParser();
@@ -104,7 +103,6 @@ public class SelectAndShare extends Application {
 	public String completeWriteTempFile(ByteArrayOutputStream baos) throws NoSuchAlgorithmException {
 		FileOutputStream outputStream = null;
 		try {
-			System.out.println("text" + baos.toString());
 			md = MessageDigest.getInstance("SHA-1");
 			md.update(baos.toByteArray(), 0, baos.size());
 			byte[] mdbytes = md.digest();
@@ -113,10 +111,7 @@ public class SelectAndShare extends Application {
 	        for (int i = 0; i < mdbytes.length; i++) {
 	          sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
 	        }
-	        
-	        System.out.println("MessageDiggest2" + sb.toString());
-	        Arrays.fill(mdbytes, (byte) 0 );
-	        
+
 			if(mAddNumber == 0){
 				mAddNumber = get_mAddBackNumber(globalContext.getFilesDir());
 				mAddNumber+=1;
@@ -126,7 +121,7 @@ public class SelectAndShare extends Application {
 				mAddNumber+=1;
 				outputStream = globalContext.openFileOutput("output_temp_" + mAddNumber + "_" + sb.toString() +".txt",Context.MODE_PRIVATE);
 			}
-			
+
 			baos.writeTo(outputStream);			
 			String sha = sb.toString();
 			sb = null;

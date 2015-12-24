@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
@@ -15,34 +14,23 @@ import java.net.MalformedURLException;
 import java.net.URL;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.RemoteException;
 import android.util.Log;
 
 public class FileSender {
 	Context globalContext;
-	public boolean connectException = false;
+	public boolean exceptionDelete = false;
 	
 	public void main(Context context) throws IOException {
 		globalContext = context;
 		loadFile(globalContext.getFilesDir());
-		if(connectException == false)
-			deleteRecursive(globalContext.getFilesDir());
-	}
-
-	public void deleteRecursive(File fileOrDirectory) {
-		if (fileOrDirectory.isDirectory())
-			for (File child : fileOrDirectory.listFiles())
-				deleteRecursive(child);
-		fileOrDirectory.delete();
 	}
 
 	public void loadFile(File root) throws IOException {
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		FileInputStream fis = null;
 		try {
-			for (File child : root.listFiles()) {
-				FileInputStream fis = null;
+			for (File child : root.listFiles()) {			
 				String inputString;
-				final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 				if (root.isDirectory()) {
 					if (child.exists()) {
 						String fileName = child.getName();
@@ -50,32 +38,30 @@ public class FileSender {
 						String sha1 = fileNameParts[3];
 						fis = globalContext.openFileInput(child.getName().toString());
 						BufferedReader inputReader = new BufferedReader(new InputStreamReader(fis));
-						try {
-							while ((inputString = inputReader.readLine()) != null) {
-								baos.write(inputString.getBytes());
-							}
-							connectAndSendHttp(baos, sha1);
-						} catch (IOException e) {
-							Log.e("tag", e.getMessage());
-						} finally {
-							if (baos != null) {
-								baos.flush();
-								baos.close();
-							}
-							if (fis != null) {
-								fis.close();
-								fis = null;
-							}
+						while ((inputString = inputReader.readLine()) != null) {
+							baos.write(inputString.getBytes());
 						}
+						exceptionDelete = connectAndSendHttp(baos, sha1);	
+						boolean success = false;
+						if(exceptionDelete == false)
+							success = (new File(child.getCanonicalPath())).delete();
+						System.out.println("success" + success);
+						baos.flush();
+						baos.close();
+						fis.close();
+						inputReader.close();
 					}
 				}
 			}
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
+		catch (IOException e) {			
+			Log.e("tag", e.getMessage());
+		}
 	}
-// ConnectException behövs inte för att den läser alltid
-	public void connectAndSendHttp(ByteArrayOutputStream baos, String sha1) {
+
+	public boolean connectAndSendHttp(ByteArrayOutputStream baos, String sha1){
 		try {
 			URL url;
 			url = new URL("http://10.0.2.2:8080");
@@ -83,8 +69,9 @@ public class FileSender {
 			String charset = "UTF-8";
 
 			HttpURLConnection conn;
-
+			
 			conn = (HttpURLConnection) url.openConnection();
+
 			conn.setRequestMethod("POST");
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
@@ -92,20 +79,31 @@ public class FileSender {
 			conn.setRequestProperty("X-checksum", sha1);
 			conn.setRequestProperty("ENCTYPE", "multipart/form-data");
 			conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=" + charset);
+			
 			OutputStream output = conn.getOutputStream();
-			output.write(baos.toByteArray());
-			output.close();
+			
+			output.write(baos.toByteArray());	
+			output.flush();
+			output.close();	
+			int responseCode = conn.getResponseCode();
+			if(responseCode == 409){
+				System.out.println("409");
+				return true;
+			}
 			conn.getInputStream();
+			conn = null;
 		}
 		catch (ConnectException e) {
-			connectException = true;
 			e.printStackTrace();
+			return true;
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+		catch(IOException e){
+			e.printStackTrace();
+			return true;
+		}
+		return false;
 	}
 }
