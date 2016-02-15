@@ -1,19 +1,26 @@
 package com.helloworld.testjni2;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.util.List;
+import java.util.Scanner;
 
 import android.content.Context;
+import android.graphics.Path;
+import android.provider.MediaStore.Files;
 import android.util.Log;
 
 public class FileSender {
@@ -24,32 +31,44 @@ public class FileSender {
 		globalContext = context;
 		loadFile(globalContext.getFilesDir());
 	}
-
-	public void loadFile(File root) throws IOException {
-		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		FileInputStream fis = null;
+	// Skapar filer med samma nummer
+	// Filer kan bli tomma vid omstart
+	// När appen är avstängd blir sha1 fel i bakgrunden
+	public void loadFile(File root) {
 		try {
-			for (File child : root.listFiles()) {			
-				String inputString;
-				if (root.isDirectory()) {
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			FileInputStream fis = null;
+			InputStreamReader isr = null;
+			BufferedReader inputReader = null;
+			for (File child : root.listFiles()) {
+				if (root.isDirectory()) {					
 					if (child.exists()) {
-						String fileName = child.getName();
-						String fileNameParts[] = fileName.substring(0, fileName.length()-4).split("_");
-						String sha1 = fileNameParts[3];
-						fis = globalContext.openFileInput(child.getName().toString());
-						BufferedReader inputReader = new BufferedReader(new InputStreamReader(fis));
-						while ((inputString = inputReader.readLine()) != null) {
-							baos.write(inputString.getBytes());
+						if(child.length() != 0){
+							String inputString;
+							String fileName = child.getName();
+							String fileNameParts[] = fileName.substring(0, fileName.length()-4).split("_");
+							//String sha1 = fileNameParts[3];
+							fis = globalContext.openFileInput(child.getName().toString());
+							isr = new InputStreamReader(fis);
+							inputReader = new BufferedReader(isr);
+							
+							while ((inputString = inputReader.readLine()) != null) {
+								System.out.println("inputString" + inputString);
+								baos.write(inputString.getBytes());
+							}
+							
+							exceptionDelete = connectAndSendHttp(baos, null);	
+							if(exceptionDelete == false)
+								(new File(child.getCanonicalPath())).delete();
+							baos.flush();
+							baos.close();
+							baos.reset();
+							fis.close();
+							isr.close();
+							inputReader.close();
 						}
-						exceptionDelete = connectAndSendHttp(baos, sha1);	
-						boolean success = false;
-						if(exceptionDelete == false)
-							success = (new File(child.getCanonicalPath())).delete();
-						System.out.println("success" + success);
-						baos.flush();
-						baos.close();
-						fis.close();
-						inputReader.close();
+						else
+							child.delete();
 					}
 				}
 			}
@@ -59,6 +78,7 @@ public class FileSender {
 		catch (IOException e) {			
 			Log.e("tag", e.getMessage());
 		}
+
 	}
 
 	public boolean connectAndSendHttp(ByteArrayOutputStream baos, String sha1){
@@ -83,11 +103,13 @@ public class FileSender {
 			OutputStream output = conn.getOutputStream();
 			
 			output.write(baos.toByteArray());	
+			baos.flush();
+			baos.close();
+			baos.reset();
 			output.flush();
 			output.close();	
 			int responseCode = conn.getResponseCode();
 			if(responseCode == 409){
-				System.out.println("409");
 				return true;
 			}
 			conn.getInputStream();

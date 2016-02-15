@@ -46,9 +46,6 @@ public class SelectAndShareService extends IntentService {
 		} catch (SecurityException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		} catch (ClassCastException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -58,10 +55,7 @@ public class SelectAndShareService extends IntentService {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		} 
 		Intent intentValue = new Intent(this, this.getClass());
 		scheduleNextUpdate(intentValue);
 	}

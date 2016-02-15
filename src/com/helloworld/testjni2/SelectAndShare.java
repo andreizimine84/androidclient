@@ -1,22 +1,26 @@
 package com.helloworld.testjni2;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.EmptyStackException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -24,11 +28,8 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.Application;
 import android.app.ActivityManager.RunningAppProcessInfo;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.hardware.Sensor;
 import android.hardware.SensorManager;
 import android.net.ConnectivityManager;
@@ -38,6 +39,7 @@ import android.os.Build;
 import android.os.Debug;
 import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Base64;
 
 public class SelectAndShare extends Application {
 	FileOutputStream fos = null;
@@ -53,58 +55,99 @@ public class SelectAndShare extends Application {
 	String folder;
 	String file;
 	
-	public void main(Intent intent, Context context)
-			throws SecurityException, RemoteException, ClassCastException, NullPointerException, IOException {
+	static {
+		System.loadLibrary("TestJNI2");
+	}
+
+	public native String connectToHostJNICPP(String fileName);
+	
+	public void main(Intent intent, Context context) {
 		globalContext = context;
 		myIntent = intent;
 	}
-
-	public void getItems()
-			throws SecurityException, RemoteException, ClassCastException, NullPointerException, IOException, NoSuchAlgorithmException {
+	// Skapa extra fil med c info
+	public void getItems() throws IOException{
 		folder = globalContext.getFilesDir().getPath();
-		file = completeWriteTempFile(returnAllElements());
+		try {
+			file = completeWriteTempFile(returnAllElements());
+		} catch (NoSuchAlgorithmException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
 		Intent in1 = new Intent("byteArray");
 		sendLocationBroadcast(in1);
 	}
 
-	public ByteArrayOutputStream returnAllElements()
-			throws SecurityException, RemoteException, ClassCastException, NullPointerException, IOException {
+	public ByteArrayOutputStream returnAllJNIElements() {
 		ByteArrayOutputStream baosR = new ByteArrayOutputStream();
-		baosR.write(dp.getAsciInfoStream().getBytes());
-		baosR.write(getInfoStreamToAsci().toByteArray());
-		baosR.write(dp.getAsciNetworkInfoStream().getBytes());
-		baosR.write(getNetworkInfoStreamToAsci().toByteArray());
-		baosR.write(dp.getAsciRunningTaskInfoStream().getBytes());
-		baosR.write(getRunningTaskInfoStreamToAsci().toByteArray());
-		baosR.write(dp.getAsciTimeInfoStream().getBytes());
-		baosR.write(getTimeInfoStreamToAsci().toByteArray());
-		baosR.write(dp.getAsciRunningAppProcessInfo().getBytes());
-		baosR.write(getRunningAppProcessInfoToAsci().toByteArray());
-		baosR.write(dp.getAsciRunningServiceInfo().getBytes());
-		baosR.write(getRunningServiceInfoToAsci().toByteArray());
-		baosR.write(dp.getAsciSensorInfoStream().getBytes());
-		baosR.write(getSensorInfoToAsci().toByteArray());
-		baosR.write(dp.getAsciBatteryInfo().getBytes());
-		baosR.write(getBatteryInfo().toByteArray());
-		baosR.write(dp.getAsciNetworkInfo().getBytes());
-		baosR.write(getNetworkInfoToAsci().toByteArray());
-		baosR.write(dp.getAsciActiveNetworkInfo().getBytes());
-		baosR.write(getActiveNetworkInfoToAsci().toByteArray());
-		baosR.write(dp.getAsciAllNetworkInfo().getBytes());
-		baosR.write(getAllNetworkInfoToAsci().toByteArray());
-		baosR.write(dp.getAsciEndOfTransmission().getBytes());
-
-		baosR.flush();
-
+		try {
+			baosR.write(dp.getAsciProcMemo().getBytes());
+			baosR.write(getProcMemo().toByteArray());
+			baosR.write(dp.getAsciCpuMemo().getBytes());
+			baosR.write(getCpuMemo().toByteArray());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return baosR;
+		
+	}
+	
+	public ByteArrayOutputStream returnAllElements() {
+		ByteArrayOutputStream baosR = new ByteArrayOutputStream();
+		try {
+			baosR.write(dp.getAsciInfoStream().getBytes());
+			baosR.write(getInfoStreamToAsci().toByteArray());
+			baosR.write(dp.getAsciNetworkInfoStream().getBytes());
+			baosR.write(getNetworkInfoStreamToAsci().toByteArray());
+			baosR.write(dp.getAsciRunningTaskInfoStream().getBytes());
+			baosR.write(getRunningTaskInfoStreamToAsci().toByteArray());
+			baosR.write(dp.getAsciTimeInfoStream().getBytes());
+			baosR.write(getTimeInfoStreamToAsci().toByteArray());
+			baosR.write(dp.getAsciRunningAppProcessInfo().getBytes());
+			baosR.write(getRunningAppProcessInfoToAsci().toByteArray());
+			baosR.write(dp.getAsciRunningServiceInfo().getBytes());
+			baosR.write(getRunningServiceInfoToAsci().toByteArray());
+			baosR.write(dp.getAsciSensorInfoStream().getBytes());
+			baosR.write(getSensorInfoToAsci().toByteArray());
+			baosR.write(dp.getAsciBatteryInfo().getBytes());
+			baosR.write(getBatteryInfo().toByteArray());
+			baosR.write(dp.getAsciNetworkInfo().getBytes());
+			baosR.write(getNetworkInfoToAsci().toByteArray());
+			baosR.write(dp.getAsciActiveNetworkInfo().getBytes());
+			baosR.write(getActiveNetworkInfoToAsci().toByteArray());
+			baosR.write(dp.getAsciAllNetworkInfo().getBytes());
+			baosR.write(getAllNetworkInfoToAsci().toByteArray());
+			baosR.write(dp.getJNIInfo().getBytes());
+			baosR.write(returnAllJNIElements().toByteArray());
+			//baosR.write(dp.getAsciEndOfTransmission().getBytes());
+			baosR.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (SecurityException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ClassCastException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NullPointerException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		return baosR;
 	}
 
 
-	public String completeWriteTempFile(ByteArrayOutputStream baos) throws NoSuchAlgorithmException {
+	public String completeWriteTempFile(ByteArrayOutputStream baos) throws NoSuchAlgorithmException, IOException {
 		FileOutputStream outputStream = null;
+		File[] files = new File[2];
 		try {
 			md = MessageDigest.getInstance("SHA-1");
-			md.update(baos.toByteArray(), 0, baos.size());
+			md.update(baos.toByteArray());
 			byte[] mdbytes = md.digest();
 
 	        StringBuffer sb = new StringBuffer();
@@ -112,17 +155,20 @@ public class SelectAndShare extends Application {
 	          sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
 	        }
 
+	        md.reset();
+	        mdbytes = new byte[0];
 			if(mAddNumber == 0){
 				mAddNumber = get_mAddBackNumber(globalContext.getFilesDir());
 				mAddNumber+=1;
 				outputStream = globalContext.openFileOutput("output_temp_" + mAddNumber + "_" + sb.toString() +".txt",Context.MODE_PRIVATE);
 			}
 			else{
+				mAddNumber = get_mAddBackNumber(globalContext.getFilesDir());
 				mAddNumber+=1;
 				outputStream = globalContext.openFileOutput("output_temp_" + mAddNumber + "_" + sb.toString() +".txt",Context.MODE_PRIVATE);
 			}
-
-			baos.writeTo(outputStream);			
+			baos.writeTo(outputStream);
+			files[0] = new File(folder + "/" + "output_temp_" + mAddNumber + "_" + sb.toString() +".txt");
 			String sha = sb.toString();
 			sb = null;
 			baos.flush();
@@ -130,17 +176,85 @@ public class SelectAndShare extends Application {
 			baos.close();
 			outputStream.flush();
 			outputStream.close();
-			return "output_temp_" + mAddNumber + "_" + sha +  ".txt";
+			
+			baos = new ByteArrayOutputStream();
+			baos.write(returnAllJNIElements().toByteArray());
+			md = MessageDigest.getInstance("SHA-1");
+			md.update(baos.toByteArray());
+			mdbytes = md.digest();
+
+	        sb = new StringBuffer();
+	        for (int i = 0; i < mdbytes.length; i++) {
+	          sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+	        }
+
+	        md.reset();
+	        mdbytes = new byte[0];
+	        mAddNumber++;
+			FileOutputStream outputStream2 = globalContext.openFileOutput("output_temp_" + mAddNumber + "_" + sb.toString() +".txt",Context.MODE_PRIVATE);
+			baos.writeTo(outputStream2);
+			files[1] = new File(folder + "/" + "output_temp_" + mAddNumber + "_" + sb.toString() +".txt");
+			outputStream2.flush();
+			outputStream2.close();
+			baos.flush();
+			baos.close();
+			baos.reset();
+			sb = null;
+			int number = mAddNumber + 1;
+			File mergedFile = new File(folder + "/"+ "output_temp_" + number + "_"  +".txt");
+			mergedFile.canWrite();
+			mergeFiles(files, mergedFile);
+			
+			return "output_temp_" + number + "_" + sha +  ".txt";
 		} catch (IOException e) {
 			System.err.println("Caught IOException: " + e.getMessage());
 		} 
 		catch (NullPointerException e) {
 			System.err.println("Caught NullPointerException: " + e.getMessage());
-		} 
+		}
 	
 		return null;
 	}
 
+	public static void mergeFiles(File[] files, File mergedFile) {
+		 
+		FileWriter fstream = null;
+		BufferedWriter out = null;
+		try {
+			fstream = new FileWriter(mergedFile, true);
+			out = new BufferedWriter(fstream);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+ 
+		for (File f : files) {
+			System.out.println("merging: " + f.getName());
+			FileInputStream fis;
+			try {
+				fis = new FileInputStream(f);
+				BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+ 
+				String aLine;
+				while ((aLine = in.readLine()) != null) {
+					out.write(aLine);
+					out.newLine();
+					System.out.println(aLine);
+				}
+				
+				in.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+ 
+		try {
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+	}
+	
 	public int get_mAddBackNumber(File root){
 		int i = 0;
 		for (File child : root.listFiles()) {
@@ -443,6 +557,71 @@ public class SelectAndShare extends Application {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return baos;
+	}
+	
+	public ByteArrayOutputStream getCpuMemo() throws IOException{
+		String fileNameProcMemo = "/proc/cpuinfo";
+		String dataProcMemo = connectToHostJNICPP(fileNameProcMemo);
+		//dataProcMemo = dataProcMemo.replaceAll("\\s", ""); 
+		//dataProcMemo = dataProcMemo.replaceAll("\\r", System.getProperty("line.separator")).replaceAll("\\n", System.getProperty("line.separator"));
+        String[] temp;
+        String delimiter = ":";
+        // String dataProcMemo2 = new String(dataProcMemo.getClass().toString());
+        temp = dataProcMemo.split(delimiter);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        for(int i =0; i < temp.length ; i++){
+        	String data = dp.getName(temp[i]) + temp[i + 1] + dp.getAsciRecordSeparator();
+        	i++;
+            try {
+            	baos.write(data.getBytes());
+            } catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+            }    
+        }
+        baos.flush();
+        return baos;
+	}
+	
+	public ByteArrayOutputStream getProcMemo() throws IOException {
+		String fileNameProcMemo = "/proc/meminfo";
+		String dataProcMemo = connectToHostJNICPP(fileNameProcMemo);
+		//dataProcMemo = Base64.encodeToString(bytes, Base64.DEFAULT);
+        //dataProcMemo = dataProcMemo.replaceAll("(\\n)", "");
+		//dataProcMemo = dataProcMemo.replaceAll("\\s", ""); 
+		//dataProcMemo = dataProcMemo.replaceAll("\\r", System.getProperty("line.separator")).replaceAll("\\n", System.getProperty("line.separator"));
+		//byte[] bytes = dataProcMemo.getBytes("UTF-8");			
+		//dataProcMemo = Base64.encodeToString(bytes, Base64.DEFAULT);
+		//byte[] bytes2 = Base64.decode(bytes, 0);
+		//dataProcMemo = new String(bytes2);
+		System.out.println("dataProcMemo" + dataProcMemo + "+");
+		/* for(int i =0; i < dataProcMemo.length(); i++){
+        	dataProcMemo.replace("\n", "");
+        	dataProcMemo.replace("\r", "");
+        }*/
+		//String dataProcMemo2 = new String(dataProcMemo);
+        String[] temp;
+        String delimiter = ":";
+        temp = dataProcMemo.split(delimiter);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        for(int i =0; i < temp.length ; i++){
+        	String data = dp.getName(temp[i]) + temp[i + 1] + dp.getAsciRecordSeparator();
+            i++;
+        	try {
+            	baos.write(data.getBytes());
+            	
+            } catch (IOException e) {
+            	// TODO Auto-generated catch block
+            	e.printStackTrace();
+            }
+        }
+        baos.flush();
+        
+        System.out.println("dataProcMemo2" + baos.toString() + "+");
+
+		//System.out.println(bytes.toString());
+        
 		return baos;
 	}
 }

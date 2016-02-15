@@ -2,16 +2,11 @@ package com.helloworld.testjni2;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
-import android.R.bool;
 import android.content.Context;
 import android.content.Intent;
 import android.os.RemoteException;
