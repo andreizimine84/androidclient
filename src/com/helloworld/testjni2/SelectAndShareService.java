@@ -55,6 +55,9 @@ public class SelectAndShareService extends IntentService {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		} 
 		Intent intentValue = new Intent(this, this.getClass());
 		scheduleNextUpdate(intentValue);

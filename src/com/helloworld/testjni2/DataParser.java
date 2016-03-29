@@ -2,8 +2,8 @@ package com.helloworld.testjni2;
 
 public class DataParser {
 	
-	public String getAsciStartOfText() {
-		return "\002";
+	public String getAsciStartOfHeading() {
+		return "\001";
 	}
 
 	public String getAsciUnitSeparator() {
@@ -23,7 +23,7 @@ public class DataParser {
 	}
 
 	public String setName(String name) {
-		return getAsciStartOfText() + name + getAsciUnitSeparator();
+		return getAsciStartOfHeading() + name + getAsciUnitSeparator();
 	}
 
 	public String getAsciInfoStream() {

@@ -1,26 +1,21 @@
 package com.helloworld.testjni2;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import org.joda.time.LocalTime;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -39,7 +34,6 @@ import android.os.Build;
 import android.os.Debug;
 import android.os.RemoteException;
 import android.support.v4.content.LocalBroadcastManager;
-import android.util.Base64;
 
 public class SelectAndShare extends Application {
 	FileOutputStream fos = null;
@@ -54,7 +48,6 @@ public class SelectAndShare extends Application {
 	int mAddNumber = 0;
 	String folder;
 	String file;
-	
 	static {
 		System.loadLibrary("TestJNI2");
 	}
@@ -65,8 +58,8 @@ public class SelectAndShare extends Application {
 		globalContext = context;
 		myIntent = intent;
 	}
-	// Skapa extra fil med c info
-	public void getItems() throws IOException{
+
+	public void getItems() throws IOException, SecurityException, RemoteException, ClassCastException{
 		folder = globalContext.getFilesDir().getPath();
 		try {
 			file = completeWriteTempFile(returnAllElements());
@@ -78,57 +71,55 @@ public class SelectAndShare extends Application {
 		sendLocationBroadcast(in1);
 	}
 
-	public ByteArrayOutputStream returnAllJNIElements() {
-		ByteArrayOutputStream baosR = new ByteArrayOutputStream();
-		try {
-			baosR.write(dp.getAsciProcMemo().getBytes());
-			baosR.write(getProcMemo().toByteArray());
-			baosR.write(dp.getAsciCpuMemo().getBytes());
-			baosR.write(getCpuMemo().toByteArray());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return baosR;
-		
-	}
-	
 	public ByteArrayOutputStream returnAllElements() {
 		ByteArrayOutputStream baosR = new ByteArrayOutputStream();
-		try {
+		try {	
 			baosR.write(dp.getAsciInfoStream().getBytes());
 			baosR.write(getInfoStreamToAsci().toByteArray());
+
 			baosR.write(dp.getAsciNetworkInfoStream().getBytes());
 			baosR.write(getNetworkInfoStreamToAsci().toByteArray());
+
 			baosR.write(dp.getAsciRunningTaskInfoStream().getBytes());
 			baosR.write(getRunningTaskInfoStreamToAsci().toByteArray());
-			baosR.write(dp.getAsciTimeInfoStream().getBytes());
-			baosR.write(getTimeInfoStreamToAsci().toByteArray());
-			baosR.write(dp.getAsciRunningAppProcessInfo().getBytes());
-			baosR.write(getRunningAppProcessInfoToAsci().toByteArray());
-			baosR.write(dp.getAsciRunningServiceInfo().getBytes());
-			baosR.write(getRunningServiceInfoToAsci().toByteArray());
+
+			//baosR.write(dp.getAsciTimeInfoStream().getBytes());
+			//baosR.write(getTimeInfoStreamToAsci().toByteArray());
+
+			//baosR.write(dp.getAsciRunningAppProcessInfo().getBytes());
+			//baosR.write(getRunningAppProcessInfoToAsci().toByteArray());
+
+			//baosR.write(dp.getAsciRunningServiceInfo().getBytes());
+			//baosR.write(getRunningServiceInfoToAsci().toByteArray());
+
 			baosR.write(dp.getAsciSensorInfoStream().getBytes());
 			baosR.write(getSensorInfoToAsci().toByteArray());
+
 			baosR.write(dp.getAsciBatteryInfo().getBytes());
 			baosR.write(getBatteryInfo().toByteArray());
+
 			baosR.write(dp.getAsciNetworkInfo().getBytes());
 			baosR.write(getNetworkInfoToAsci().toByteArray());
+
 			baosR.write(dp.getAsciActiveNetworkInfo().getBytes());
 			baosR.write(getActiveNetworkInfoToAsci().toByteArray());
+
 			baosR.write(dp.getAsciAllNetworkInfo().getBytes());
 			baosR.write(getAllNetworkInfoToAsci().toByteArray());
-			baosR.write(dp.getJNIInfo().getBytes());
-			baosR.write(returnAllJNIElements().toByteArray());
-			//baosR.write(dp.getAsciEndOfTransmission().getBytes());
-			baosR.flush();
+
+			//baosR.write(dp.getAsciProcMemo().getBytes());
+			//baosR.write(getProcMemoToAsci().toByteArray());
+			//baosR.write(dp.getAsciCpuMemo().getBytes());
+			//baosR.write(getCpuMemoToAsci().toByteArray());
+
+			baosR.write(dp.getAsciEndOfTransmission().getBytes());
+			//baosR.flush();
+			//baosR.reset();
+			baosR.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (SecurityException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (ClassCastException e) {
@@ -137,12 +128,15 @@ public class SelectAndShare extends Application {
 		} catch (NullPointerException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
 		return baosR;
 	}
 
+	public String completeWriteTempFile(ByteArrayOutputStream baos) throws NoSuchAlgorithmException, IOException, SecurityException, RemoteException, ClassCastException {
 
-	public String completeWriteTempFile(ByteArrayOutputStream baos) throws NoSuchAlgorithmException, IOException {
 		FileOutputStream outputStream = null;
 		File[] files = new File[2];
 		try {
@@ -168,6 +162,7 @@ public class SelectAndShare extends Application {
 				outputStream = globalContext.openFileOutput("output_temp_" + mAddNumber + "_" + sb.toString() +".txt",Context.MODE_PRIVATE);
 			}
 			baos.writeTo(outputStream);
+			
 			files[0] = new File(folder + "/" + "output_temp_" + mAddNumber + "_" + sb.toString() +".txt");
 			String sha = sb.toString();
 			sb = null;
@@ -176,85 +171,18 @@ public class SelectAndShare extends Application {
 			baos.close();
 			outputStream.flush();
 			outputStream.close();
-			
-			baos = new ByteArrayOutputStream();
-			baos.write(returnAllJNIElements().toByteArray());
-			md = MessageDigest.getInstance("SHA-1");
-			md.update(baos.toByteArray());
-			mdbytes = md.digest();
-
-	        sb = new StringBuffer();
-	        for (int i = 0; i < mdbytes.length; i++) {
-	          sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
-	        }
-
-	        md.reset();
-	        mdbytes = new byte[0];
-	        mAddNumber++;
-			FileOutputStream outputStream2 = globalContext.openFileOutput("output_temp_" + mAddNumber + "_" + sb.toString() +".txt",Context.MODE_PRIVATE);
-			baos.writeTo(outputStream2);
-			files[1] = new File(folder + "/" + "output_temp_" + mAddNumber + "_" + sb.toString() +".txt");
-			outputStream2.flush();
-			outputStream2.close();
-			baos.flush();
-			baos.close();
-			baos.reset();
-			sb = null;
-			int number = mAddNumber + 1;
-			File mergedFile = new File(folder + "/"+ "output_temp_" + number + "_"  +".txt");
-			mergedFile.canWrite();
-			mergeFiles(files, mergedFile);
-			
-			return "output_temp_" + number + "_" + sha +  ".txt";
+			return "output_temp_" + mAddNumber + "_" + sha +  ".txt";
 		} catch (IOException e) {
 			System.err.println("Caught IOException: " + e.getMessage());
 		} 
 		catch (NullPointerException e) {
 			System.err.println("Caught NullPointerException: " + e.getMessage());
 		}
+
 	
 		return null;
 	}
 
-	public static void mergeFiles(File[] files, File mergedFile) {
-		 
-		FileWriter fstream = null;
-		BufferedWriter out = null;
-		try {
-			fstream = new FileWriter(mergedFile, true);
-			out = new BufferedWriter(fstream);
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
- 
-		for (File f : files) {
-			System.out.println("merging: " + f.getName());
-			FileInputStream fis;
-			try {
-				fis = new FileInputStream(f);
-				BufferedReader in = new BufferedReader(new InputStreamReader(fis));
- 
-				String aLine;
-				while ((aLine = in.readLine()) != null) {
-					out.write(aLine);
-					out.newLine();
-					System.out.println(aLine);
-				}
-				
-				in.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
- 
-		try {
-			out.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		
-	}
-	
 	public int get_mAddBackNumber(File root){
 		int i = 0;
 		for (File child : root.listFiles()) {
@@ -275,22 +203,26 @@ public class SelectAndShare extends Application {
 
 	public List<RunningAppProcessInfo> getRunningAppProcessInfo() {
 		ActivityManager manager = (ActivityManager) globalContext.getSystemService(Context.ACTIVITY_SERVICE);
-		List<RunningAppProcessInfo> android = manager.getRunningAppProcesses();
+		List<RunningAppProcessInfo> android = new ArrayList<RunningAppProcessInfo>();
+		android.addAll(manager.getRunningAppProcesses());
+		manager = null;
 		return android;
 	}
 
 	public ByteArrayOutputStream getRunningAppProcessInfoToAsci() {
 		int counter = 0;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		List<RunningAppProcessInfo> android = getRunningAppProcessInfo();
+		List<RunningAppProcessInfo> android = new ArrayList<RunningAppProcessInfo>();
+		android.addAll(getRunningAppProcessInfo());
 		try {
 			while (counter != android.size()) {
 				String data = dp.getName(android.get(counter).processName) + dp.getAsciRecordSeparator();
 				counter++;
 				baos.write(data.getBytes());
 			}
-
+			android = null;
 			baos.flush();
+			baos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -300,22 +232,26 @@ public class SelectAndShare extends Application {
 	public List<RunningServiceInfo> getRunningServiceInfo() {
 		ActivityManager manager = (ActivityManager) globalContext.getSystemService(Context.ACTIVITY_SERVICE);
 
-		List<RunningServiceInfo> android = manager.getRunningServices(manager.getRunningAppProcesses().size());
-
+		List<RunningServiceInfo> android = new ArrayList<RunningServiceInfo>();
+		android.addAll(manager.getRunningServices(manager.getRunningAppProcesses().size()));
+		manager = null;
 		return android;
 	}
 
 	public ByteArrayOutputStream getRunningServiceInfoToAsci() {
 		int counter = 0;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		List<RunningServiceInfo> android = getRunningServiceInfo();
+		List<RunningServiceInfo> android = new ArrayList<RunningServiceInfo>();
+		android.addAll(getRunningServiceInfo());
 		try {
 			while (counter != android.size()) {
-				String data = dp.getName(android.get(counter).toString()).toString() + dp.getAsciRecordSeparator();
+				String data = dp.getName(android.get(counter).toString()) + dp.getAsciRecordSeparator();
 				counter++;
 				baos.write(data.toString().getBytes());
 			}
+			android = null;
 			baos.flush();
+			baos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -331,37 +267,53 @@ public class SelectAndShare extends Application {
 		int chargePlug = myIntent.getIntExtra(BatteryManager.EXTRA_PLUGGED, -1);
 		boolean usbCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_USB;
 		boolean acCharge = chargePlug == BatteryManager.BATTERY_PLUGGED_AC;
-		dataBattery.append(status);
-		dataBattery.append(isCharging);
-		dataBattery.append(chargePlug);
-		dataBattery.append(usbCharge);
-		dataBattery.append(acCharge);
+		String[] dataBattery = new String[5];
+		dataBattery[0] = Integer.toString(status);
+		dataBattery[1] = String.valueOf(isCharging);
+		dataBattery[2] = String.valueOf(chargePlug);
+		dataBattery[3] = String.valueOf(usbCharge);
+		dataBattery[4] = String.valueOf(acCharge);
+
+		String[] batteryNames = new String[5];
+		batteryNames[0] = "status";
+		batteryNames[1] = "isCharging";
+		batteryNames[2] = "chargePlug";
+		batteryNames[3] = "usbCharge";
+		batteryNames[4] = "acCharge";
 		
-		baos.write(dataBattery.toString().getBytes());
+		for(int i = 0; i < dataBattery.length; i++){
+			String data = dp.getName(batteryNames[i]) + dataBattery[i] + dp.getAsciRecordSeparator();
+			baos.write(data.getBytes());
+		}
+		batteryNames = null;
 		baos.flush();
+		baos.close();
 		return baos;
 	}
 
 	public List<Sensor> getSensorInfo() {
 		SensorManager manager;
 		manager = (SensorManager) globalContext.getSystemService(SENSOR_SERVICE);
-		List<Sensor> android = manager.getSensorList(Sensor.TYPE_ALL);
+		List<Sensor> android = new ArrayList<Sensor>();
+		android.addAll(manager.getSensorList(Sensor.TYPE_ALL));
+		manager = null;
 		return android;
 	}
 
 	public ByteArrayOutputStream getSensorInfoToAsci() {
 		int counter = 0;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		List<Sensor> android = getSensorInfo();
+		List<Sensor> android = new ArrayList<Sensor>(); 
+		android.addAll(getSensorInfo());
 		try {
 			while (counter != android.size()) {
-				String data = dp.getName(android.get(counter).getName()) + dp.getAsciRecordSeparator();
-				data = android.get(counter).getVendor() + dp.getAsciRecordSeparator();
-				data = android.get(counter).getVersion() + dp.getAsciRecordSeparator();
+				String data = dp.getName(android.get(counter).getName()) + android.get(counter).getVendor() + dp.getAsciRecordSeparator() + android.get(counter).getVersion() + dp.getAsciRecordSeparator();
 				counter++;
 				baos.write(data.toString().getBytes());
 			}
+			android = null;
 			baos.flush();
+			baos.close();
 		}
 
 		catch (IOException e) {
@@ -372,22 +324,26 @@ public class SelectAndShare extends Application {
 
 	public List<ActivityManager.RunningTaskInfo> getRunningTaskInfo() throws RemoteException {
 		ActivityManager am = (ActivityManager) globalContext.getSystemService(Context.ACTIVITY_SERVICE);
-		List<ActivityManager.RunningTaskInfo> android = am.getRunningTasks(10);
+		List<ActivityManager.RunningTaskInfo> android = new ArrayList<ActivityManager.RunningTaskInfo>();
+		android.addAll(am.getRunningTasks(10));
+		am = null;
 		return android;
 	}
 
 	public ByteArrayOutputStream getRunningTaskInfoToAsci() {
 		int counter = 0;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		List<ActivityManager.RunningTaskInfo> android;
+		List<ActivityManager.RunningTaskInfo> android= new ArrayList<ActivityManager.RunningTaskInfo>();
 		try {
-			android = getRunningTaskInfo();
+			android.addAll(getRunningTaskInfo());
 			while (counter != android.size()) {
 				String data = dp.getName(android.get(counter).toString()) + dp.getAsciRecordSeparator();
 				counter++;
 				baos.write(data.getBytes());
-				baos.flush();
 			}
+			android = null;
+			baos.flush();
+			baos.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -404,6 +360,7 @@ public class SelectAndShare extends Application {
 		ConnectivityManager manager = (ConnectivityManager) globalContext
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		boolean android = manager.isNetworkTypeValid(manager.TYPE_WIFI);
+		manager = null;
 		return android;
 	}
 
@@ -412,10 +369,10 @@ public class SelectAndShare extends Application {
 		boolean android;
 		try {
 			android = getNetworkInfo();
-			String data = dp.getName("TYPE_WIFI") + dp.getAsciRecordSeparator();
-			data = android + dp.getAsciRecordSeparator();
+			String data = dp.getName("TYPE_WIFI") + android + dp.getAsciRecordSeparator();
 			baos.write(data.toString().getBytes());
 			baos.flush();
+			baos.close();
 		}
 
 		catch (IOException e) {
@@ -428,6 +385,7 @@ public class SelectAndShare extends Application {
 		ConnectivityManager manager = (ConnectivityManager) globalContext
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo ni = manager.getActiveNetworkInfo();
+		manager = null;
 		return ni;
 	}
 
@@ -438,7 +396,9 @@ public class SelectAndShare extends Application {
 			android = getActiveNetworkInfo();
 			String data = dp.getName(android.toString()) + dp.getAsciRecordSeparator();
 			baos.write(data.toString().getBytes());
+			android = null;
 			baos.flush();
+			baos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -449,6 +409,7 @@ public class SelectAndShare extends Application {
 		ConnectivityManager manager = (ConnectivityManager) globalContext
 				.getSystemService(Context.CONNECTIVITY_SERVICE);
 		NetworkInfo[] ni = manager.getAllNetworkInfo();
+		manager = null;
 		return ni;
 	}
 
@@ -463,7 +424,9 @@ public class SelectAndShare extends Application {
 				counter++;
 				baos.write(data.getBytes());
 			}
+			android = null;
 			baos.flush();
+			baos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -472,16 +435,17 @@ public class SelectAndShare extends Application {
 
 	public ByteArrayOutputStream getRunningTaskInfoStreamToAsci() throws RemoteException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Iterator<ActivityManager.RunningTaskInfo> iterator = getRunningTaskInfo().iterator();
+		ListIterator<ActivityManager.RunningTaskInfo> iterator = getRunningTaskInfo().listIterator();
 
 		try {
 			while (iterator.hasNext()) {
 				ActivityManager.RunningTaskInfo version = iterator.next();
 				String data = dp.getName(version.topActivity.getClassName().toString()) + dp.getAsciRecordSeparator();
-				baos.write(data.toString().getBytes());
+				baos.write(data.getBytes());
 			}
-
+			iterator = null;
 			baos.flush();
+			baos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -490,7 +454,7 @@ public class SelectAndShare extends Application {
 
 	public ByteArrayOutputStream getTimeInfoStreamToAsci() {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Iterator<RunningServiceInfo> iterator = getRunningServiceInfo().iterator();
+		ListIterator<RunningServiceInfo> iterator = getRunningServiceInfo().listIterator();
 		Format formatter;
 		try {
 			while (iterator.hasNext()) {
@@ -503,16 +467,16 @@ public class SelectAndShare extends Application {
 				long finEnd = TimeUnit.SECONDS.convert(estimatedEndTime, TimeUnit.NANOSECONDS);
 				long fin = TimeUnit.SECONDS.convert(estimatedTime, TimeUnit.NANOSECONDS);
 				formatter = new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss");
-				String s = formatter.format(System.currentTimeMillis() - fin);
-				baos.write(dp.getName(version.process).getBytes());
-				baos.write(s.getBytes());
-				s = null;
-				s = formatter.format(System.currentTimeMillis() - finEnd);
-				baos.write(s.getBytes());
+				String timeMillisFin = formatter.format(System.currentTimeMillis() - fin);
+				String timeMillisFinEnd = formatter.format(System.currentTimeMillis() - finEnd);
+				String append = dp.getName(version.process) + timeMillisFin + dp.getAsciRecordSeparator()+ timeMillisFinEnd + dp.getAsciRecordSeparator();
+
+				baos.write(append.getBytes());
+				append = null;
 			}
-
+			iterator = null;
 			baos.flush();
-
+			baos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -526,7 +490,9 @@ public class SelectAndShare extends Application {
 			boolean isNetworkTypeValid = getNetworkInfo();
 			String append = dp.getName("WIFI") + isNetworkTypeValid + dp.getAsciRecordSeparator();
 			baos.write(append.getBytes());
+			append = null;
 			baos.flush();
+			baos.close();
 		}
 
 		catch (IOException e) {
@@ -541,7 +507,7 @@ public class SelectAndShare extends Application {
 	public ByteArrayOutputStream getInfoStreamToAsci()
 			throws SecurityException, RemoteException, ClassCastException, NullPointerException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		Iterator<RunningAppProcessInfo> iterator = getRunningAppProcessInfo().iterator();
+		ListIterator<RunningAppProcessInfo> iterator = getRunningAppProcessInfo().listIterator();
 		ActivityManager manager = (ActivityManager) globalContext.getSystemService(Context.ACTIVITY_SERVICE);
 		try {
 			while (iterator.hasNext()) {
@@ -553,21 +519,21 @@ public class SelectAndShare extends Application {
 				baos.write(data.getBytes());
 
 			}
+			manager = null;
+			iterator = null;
 			baos.flush();
+			baos.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		return baos;
 	}
 	
-	public ByteArrayOutputStream getCpuMemo() throws IOException{
+	public ByteArrayOutputStream getCpuMemoToAsci() throws IOException{
 		String fileNameProcMemo = "/proc/cpuinfo";
 		String dataProcMemo = connectToHostJNICPP(fileNameProcMemo);
-		//dataProcMemo = dataProcMemo.replaceAll("\\s", ""); 
-		//dataProcMemo = dataProcMemo.replaceAll("\\r", System.getProperty("line.separator")).replaceAll("\\n", System.getProperty("line.separator"));
         String[] temp;
         String delimiter = ":";
-        // String dataProcMemo2 = new String(dataProcMemo.getClass().toString());
         temp = dataProcMemo.split(delimiter);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         for(int i =0; i < temp.length ; i++){
@@ -579,28 +545,19 @@ public class SelectAndShare extends Application {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
             }    
+            data = null;
         }
+        dataProcMemo = null;
+        temp = null;
         baos.flush();
+        baos.close();
         return baos;
 	}
 	
-	public ByteArrayOutputStream getProcMemo() throws IOException {
+	public ByteArrayOutputStream getProcMemoToAsci() throws IOException {
 		String fileNameProcMemo = "/proc/meminfo";
 		String dataProcMemo = connectToHostJNICPP(fileNameProcMemo);
-		//dataProcMemo = Base64.encodeToString(bytes, Base64.DEFAULT);
-        //dataProcMemo = dataProcMemo.replaceAll("(\\n)", "");
-		//dataProcMemo = dataProcMemo.replaceAll("\\s", ""); 
-		//dataProcMemo = dataProcMemo.replaceAll("\\r", System.getProperty("line.separator")).replaceAll("\\n", System.getProperty("line.separator"));
-		//byte[] bytes = dataProcMemo.getBytes("UTF-8");			
-		//dataProcMemo = Base64.encodeToString(bytes, Base64.DEFAULT);
-		//byte[] bytes2 = Base64.decode(bytes, 0);
-		//dataProcMemo = new String(bytes2);
-		System.out.println("dataProcMemo" + dataProcMemo + "+");
-		/* for(int i =0; i < dataProcMemo.length(); i++){
-        	dataProcMemo.replace("\n", "");
-        	dataProcMemo.replace("\r", "");
-        }*/
-		//String dataProcMemo2 = new String(dataProcMemo);
+
         String[] temp;
         String delimiter = ":";
         temp = dataProcMemo.split(delimiter);
@@ -615,13 +572,12 @@ public class SelectAndShare extends Application {
             	// TODO Auto-generated catch block
             	e.printStackTrace();
             }
+        	data = null;
         }
+        dataProcMemo = null;
+        temp = null;
         baos.flush();
-        
-        System.out.println("dataProcMemo2" + baos.toString() + "+");
-
-		//System.out.println(bytes.toString());
-        
+        baos.close();
 		return baos;
 	}
 }

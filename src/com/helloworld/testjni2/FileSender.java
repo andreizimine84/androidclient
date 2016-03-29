@@ -1,26 +1,18 @@
 package com.helloworld.testjni2;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.ConnectException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.List;
-import java.util.Scanner;
-
 import android.content.Context;
-import android.graphics.Path;
-import android.provider.MediaStore.Files;
 import android.util.Log;
 
 public class FileSender {
@@ -51,12 +43,10 @@ public class FileSender {
 							fis = globalContext.openFileInput(child.getName().toString());
 							isr = new InputStreamReader(fis);
 							inputReader = new BufferedReader(isr);
-							
 							while ((inputString = inputReader.readLine()) != null) {
 								System.out.println("inputString" + inputString);
 								baos.write(inputString.getBytes());
 							}
-							
 							exceptionDelete = connectAndSendHttp(baos, null);	
 							if(exceptionDelete == false)
 								(new File(child.getCanonicalPath())).delete();
@@ -78,9 +68,11 @@ public class FileSender {
 		catch (IOException e) {			
 			Log.e("tag", e.getMessage());
 		}
-
 	}
 
+	
+	// kolla med tcp/http monitor - för eclipse
+	
 	public boolean connectAndSendHttp(ByteArrayOutputStream baos, String sha1){
 		try {
 			URL url;
